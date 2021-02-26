@@ -1,5 +1,6 @@
 package com.pro.myloginappdemo;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
@@ -8,13 +9,21 @@ import android.util.Patterns;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
 
 public class SignUpActivity extends AppCompatActivity implements View.OnClickListener {
     private EditText signUpEmailEditText, signUpPasswordEditText;
     private TextView signInTextView;
     private Button signUpButton;
-
+    private FirebaseAuth mAuth;
+    private ProgressBar progressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -22,6 +31,9 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
         setContentView(R.layout.activity_sign_up);
         this.setTitle("Sign Up");
 
+        mAuth = FirebaseAuth.getInstance();
+
+        progressBar = findViewById(R.id.processbarId);
         signUpEmailEditText = findViewById(R.id.signUpEmailEditTextId);
         signUpPasswordEditText = findViewById(R.id.signUpPasswordEditTextId);
         signUpButton = findViewById(R.id.signUpButtonId);
@@ -61,6 +73,32 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
             return;
         }
         //cheaking password
+        if (password.isEmpty()){
+            signUpPasswordEditText.setError("Enter Password");
+            signUpPasswordEditText.requestFocus();
+            return;
+
+        }
+        if(password.length()<6){
+            signUpPasswordEditText.setError("Minium of password shuld be 6");
+            signUpPasswordEditText.requestFocus();
+            return;
+        }
+
+        progressBar.setVisibility(View.VISIBLE);
+
+        mAuth.createUserWithEmailAndPassword(email,password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+            @Override
+            public void onComplete(@NonNull Task<AuthResult> task) {
+                progressBar.setVisibility(View.GONE);
+                if (task.isSuccessful()) {
+                    Toast.makeText(getApplicationContext(), "Register is Successfully", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(getApplicationContext(), "Register is not Successfully", Toast.LENGTH_SHORT).show();
+
+                }
+            }
+        });
 
     }
 }
